@@ -1,0 +1,9 @@
+server:
+  shutdown: graceful
+  port: 10000
+
+spring:
+  r2dbc:
+    url: r2dbc:mysql://localhost:3306/test
+    username: root
+    password: smartnews
