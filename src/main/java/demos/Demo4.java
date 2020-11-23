@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  */
 public class Demo4 {
 
-    private static final String SQL = "select SQL_NO_CACHE * from waggle limit 20000";
+    private static final String SQL = "select SQL_NO_CACHE * from waggle limit 60000";
 
     /**
      * Simulate sn-reaction endpoints
@@ -37,7 +37,7 @@ public class Demo4 {
     }
 
     private static void example1() throws SQLException, ClassNotFoundException {
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        ExecutorService executorService = Executors.newFixedThreadPool(16);
         Class.forName("com.mysql.cj.jdbc.Driver");
         java.sql.Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/test?" +
                 "user=root&password=smartnews");
@@ -63,7 +63,7 @@ public class Demo4 {
     }
 
     private static void example2() {
-        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        ExecutorService executorService = Executors.newFixedThreadPool(16);
         MySqlConnectionConfiguration configuration = MySqlConnectionConfiguration.builder()
                 .host("127.0.0.1")
                 .user("root")
