@@ -30,5 +30,7 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.16'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.16'
 
+    compile group: 'io.r2dbc', name: 'r2dbc-pool', version: '0.8.5.RELEASE'
+
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
