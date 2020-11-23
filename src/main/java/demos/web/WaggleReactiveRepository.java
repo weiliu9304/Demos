@@ -8,6 +8,6 @@ import java.util.List;
 
 
 public interface WaggleReactiveRepository extends ReactiveCrudRepository<Waggle, Integer> {
-    @Query("select id, name from waggle where id in (:idList)")
+    @Query("select id, name from waggle where id in (:idList) order by id desc")
     Flux<Waggle> findByIdList(List<Integer> idList);
 }
