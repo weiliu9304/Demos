@@ -1,6 +1,8 @@
 package demos;
 
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.concurrent.ExecutorService;
@@ -14,6 +16,8 @@ public class Demo1 {
     private static ExecutorService service1 = Executors.newSingleThreadExecutor();
     private static ExecutorService service2 = Executors.newSingleThreadExecutor();
     private static ExecutorService service3 = Executors.newSingleThreadExecutor();
+
+    private static ExecutorService executorService = Executors.newFixedThreadPool(3);
 
     private static int action1(int value) {
         try {
@@ -96,6 +100,39 @@ public class Demo1 {
         System.out.println(String.format("Running time is %dms" , runningTime));
     }
 
+    private static void example4() {
+        /**
+         * sn-api use similar design
+         * 1. Mono.create to wrap a synchronous http call
+         * 2. Register callback in mono
+         * 3. Allocate a thread pool with 256 threads
+         * 4. Use thread pool to execute http call
+         *
+         * WebClient should be an alternative
+         * 1. Highly integrated with Spring Webflux
+         * 2. NIO event loop with less threads (share same event loop with netty by default)
+         * 3. Support Streaming data processing in application layer
+         * 4. Could resilient features be included in WebClient? eg: CircuitBreaker
+         */
+
+        long startTime = System.currentTimeMillis();
+
+        Scheduler scheduler = Schedulers.fromExecutor(executorService);
+        Mono<Integer> source = Mono.just(1);
+
+        Mono<Integer> sink1 = source.flatMap(value -> Mono.fromCallable(() -> action1(value)).publishOn(scheduler));
+        Mono<Integer> sink2 = source.flatMap(value -> Mono.fromCallable(() -> action2(value)).publishOn(scheduler));
+        Mono<Integer> sink3 = source.flatMap(value -> Mono.fromCallable(() -> action3(value)).publishOn(scheduler));
+
+        Mono.zip(sink1, sink2, sink3).map(ignored -> {
+            System.out.println("block " + Thread.currentThread().getName());
+            return ignored;
+        }).block();
+
+        long runningTime = System.currentTimeMillis() - startTime;
+        System.out.println(String.format("Running time is %dms" , runningTime));
+    }
+
     public static void main(String[] args) {
         System.out.println("--------- example1 ---------");
         example1();
@@ -106,14 +143,16 @@ public class Demo1 {
         System.out.println("--------- example2 ---------");
 
         System.out.println("--------- example3 ---------");
-        /**
-         * In sn-api we wrap http call into mono with a common thread pool
-         */
         example3();
         System.out.println("--------- example3 ---------");
+
+        System.out.println("--------- example4 ---------");
+        example4();
+        System.out.println("--------- example4 ---------");
 
         service1.shutdown();
         service2.shutdown();
         service3.shutdown();
+        executorService.shutdown();
     }
 }
