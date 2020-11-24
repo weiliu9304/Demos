@@ -21,9 +21,9 @@ public class Demo2 {
                         .collect(Collectors.toUnmodifiableList()));
         long startTime = System.currentTimeMillis();
         List<Integer> resultList = resultMono.block();
+        System.out.println(resultList);
         long runningTime = System.currentTimeMillis() - startTime;
         System.out.println(String.format("The running time is: %dms" , runningTime));
-        System.out.println(resultList);
     }
 
     // alternative
@@ -31,9 +31,9 @@ public class Demo2 {
         Flux<Set<Integer>> setFlux = setMono.flux().repeat();
         long startTime = System.currentTimeMillis();
         List<Tuple2<Integer , Set<Integer>>> list = Flux.zip(flux, setFlux).filter(tuple -> tuple.getT2().contains(tuple.getT1())).collectList().block();
+        System.out.println(list.stream().map(Tuple2::getT1).collect(Collectors.toUnmodifiableList()));
         long runningTime = System.currentTimeMillis() - startTime;
         System.out.println(String.format("The running time is: %dms" , runningTime));
-        System.out.println(list.stream().map(Tuple2::getT1).collect(Collectors.toUnmodifiableList()));
     }
 
     public static void main(String[] args) {
