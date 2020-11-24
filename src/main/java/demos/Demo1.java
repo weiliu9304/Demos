@@ -101,6 +101,25 @@ public class Demo1 {
     }
 
     private static void example4() {
+        long startTime = System.currentTimeMillis();
+
+        Scheduler scheduler = Schedulers.fromExecutor(executorService);
+        Mono<Integer> source = Mono.just(1);
+
+        Mono<Integer> sink1 = source.flatMap(value -> Mono.fromCallable(() -> action1(value)).publishOn(scheduler));
+        Mono<Integer> sink2 = source.flatMap(value -> Mono.fromCallable(() -> action2(value)).publishOn(scheduler));
+        Mono<Integer> sink3 = source.flatMap(value -> Mono.fromCallable(() -> action3(value)).publishOn(scheduler));
+
+        Mono.zip(sink1, sink2, sink3).map(ignored -> {
+            System.out.println("block " + Thread.currentThread().getName());
+            return ignored;
+        }).block();
+
+        long runningTime = System.currentTimeMillis() - startTime;
+        System.out.println(String.format("Running time is %dms" , runningTime));
+    }
+
+    private static void example5() {
         /**
          * sn-api use similar design
          * 1. Mono.create to wrap a synchronous http call
@@ -114,15 +133,13 @@ public class Demo1 {
          * 3. Support Streaming data processing in application layer
          * 4. Could resilient features be included in WebClient? eg: CircuitBreaker
          */
-
         long startTime = System.currentTimeMillis();
 
-        Scheduler scheduler = Schedulers.fromExecutor(executorService);
         Mono<Integer> source = Mono.just(1);
 
-        Mono<Integer> sink1 = source.flatMap(value -> Mono.fromCallable(() -> action1(value)).publishOn(scheduler));
-        Mono<Integer> sink2 = source.flatMap(value -> Mono.fromCallable(() -> action2(value)).publishOn(scheduler));
-        Mono<Integer> sink3 = source.flatMap(value -> Mono.fromCallable(() -> action3(value)).publishOn(scheduler));
+        Mono<Integer> sink1 = source.flatMap(value -> Mono.create(sink -> executorService.execute(() -> sink.success(action1(value)))));
+        Mono<Integer> sink2 = source.flatMap(value -> Mono.create(sink -> executorService.execute(() -> sink.success(action2(value)))));
+        Mono<Integer> sink3 = source.flatMap(value -> Mono.create(sink -> executorService.execute(() -> sink.success(action3(value)))));
 
         Mono.zip(sink1, sink2, sink3).map(ignored -> {
             System.out.println("block " + Thread.currentThread().getName());
@@ -149,6 +166,10 @@ public class Demo1 {
         System.out.println("--------- example4 ---------");
         example4();
         System.out.println("--------- example4 ---------");
+
+        System.out.println("--------- example5 ---------");
+        example5();
+        System.out.println("--------- example5 ---------");
 
         service1.shutdown();
         service2.shutdown();
