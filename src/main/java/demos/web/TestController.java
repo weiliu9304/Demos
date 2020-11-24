@@ -15,6 +15,6 @@ public class TestController {
 
     @GetMapping(value = "/waggles", consumes = MediaType.APPLICATION_NDJSON_VALUE, produces = MediaType.APPLICATION_NDJSON_VALUE)
     public Flux<Waggle> getWagglesReactive(@RequestBody Flux<Integer> waggleIds) {
-        return Flux.merge(waggleIds.buffer(10).map(ids -> waggleReactiveRepository.findByIdList(ids)));
+        return Flux.concat(waggleIds.distinct().buffer(10).map(ids -> waggleReactiveRepository.findByIdList(ids)));
     }
 }
