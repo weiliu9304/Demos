@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.logging.Logger;
 
 @Configuration
@@ -20,7 +21,7 @@ public class Config {
     private static final Logger LOG = Logger.getLogger("Config");
 
     @Bean
-    public DataSource dataSource(Environment environment, DBConfig dbConfig) {
+    public DataSource dataSource(Environment environment, DBConfig dbConfig) throws SQLException {
         // Use programmatic way to avoid possible crash when env is missing
         String RDS_PASSWORD = environment.getProperty("RDS_PASSWORD", "");
         LOG.info(String.format("RDS_PASSWORD: `%s`", RDS_PASSWORD));
@@ -31,15 +32,16 @@ public class Config {
         dataSource.setPoolName(dbConfig.getPoolName());
         dataSource.setMaxLifetime(dbConfig.getMaxLifetime());
         try {
+            dataSource.setPassword(RDS_PASSWORD);
+            dataSource.getConnection();
+            LOG.info("build datasource bean with env succeeded");
+        } catch (Exception e) {
+            // fallback to spring yml config
+            LOG.severe("build datasource bean with env failed");
             dataSource.setPassword(dbConfig.getPassword());
             dataSource.getConnection();
-            LOG.info("build datasource bean with spring yml succeeded");
-        } catch (Exception e) {
-            // fallback to env variable
-            LOG.severe("build datasource bean with spring yml failed");
-            dataSource.setPassword(RDS_PASSWORD);
-            // getConnection should not failed, and we can not recover from failure
-            LOG.info("build dataSource bean with env succeeded");
+            // getConnection should not failed, and we can not recover from this failure
+            LOG.info("build dataSource bean with spring yml succeeded");
         }
         return dataSource;
     }
