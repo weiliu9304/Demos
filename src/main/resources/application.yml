@@ -7,3 +7,10 @@ spring:
     url: r2dbc:pool:mysql://localhost:3306/test
     username: root
     password: smartnews
+  datasource:
+    test:
+      jdbc-url: jdbc:mysql://localhost:3306/test
+      username: root
+      password: smartnews1
+      pool-name: testDBPool
+      max-lifetime: 580000
