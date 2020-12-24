@@ -1,12 +1,9 @@
 package demos.web;
 
-import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -21,6 +18,7 @@ public class Config {
     private static final Logger LOG = Logger.getLogger("Config");
 
     @Bean
+    @RefreshScope
     public DataSource dataSource(Environment environment, DBConfig dbConfig) throws SQLException {
         // Use programmatic way to avoid possible crash when env is missing
         String RDS_PASSWORD = environment.getProperty("RDS_PASSWORD", "");

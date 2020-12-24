@@ -4,13 +4,20 @@ server:
 
 spring:
   r2dbc:
-    url: r2dbc:pool:mysql://localhost:3306/test
+    url: r2dbc:pool:mysql://localhost:3306/test?useSSL=false
     username: root
     password: smartnews
   datasource:
     test:
-      jdbc-url: jdbc:mysql://localhost:3306/test
+      jdbc-url: jdbc:mysql://localhost:3306/test?useSSL=false
       username: root
       password: smartnews1
       pool-name: testDBPool
       max-lifetime: 580000
+
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      exposure:
+        include: env, refresh
